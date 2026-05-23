@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css';
 
 const BRouterApp = () => {
   // ===== ÉTAT =====
-  const [activeTab, setActiveTab] = useState('config'); // 'config' | 'map' | 'route'
+  const [activeTab, setActiveTab] = useState('config');
   const [bikes, setBikes] = useState(() => {
     const saved = localStorage.getItem('brouter_bikes');
     return saved ? JSON.parse(saved) : getDefaultBikes();
@@ -19,12 +19,11 @@ const BRouterApp = () => {
   const [route, setRoute] = useState(null);
   const [routeMetrics, setRouteMetrics] = useState(null);
   const [isRouting, setIsRouting] = useState(false);
-  const [mapMode, setMapMode] = useState('select'); // 'select' | 'view'
+  const [mapMode, setMapMode] = useState('select');
   const mapContainer = useRef(null);
   const markersRef = useRef([]);
   const polylineRef = useRef(null);
 
-  // ===== PROFILS BROUTER =====
   function getDefaultBikes() {
     return {
       vtt: {
@@ -72,16 +71,8 @@ const BRouterApp = () => {
     };
   }
 
-  const profiles = [
-    'trekking',
-    'road',
-    'road-fast',
-    'trekking-fast',
-    'mtb',
-    'balance'
-  ];
+  const profiles = ['trekking', 'road', 'road-fast', 'trekking-fast', 'mtb', 'balance'];
 
-  // ===== SAUVEGARDE VÉLOS =====
   const saveBikes = (updatedBikes) => {
     setBikes(updatedBikes);
     localStorage.setItem('brouter_bikes', JSON.stringify(updatedBikes));
@@ -109,10 +100,7 @@ const BRouterApp = () => {
   const updateBike = (bikeId, field, value) => {
     const updated = {
       ...bikes,
-      [bikeId]: {
-        ...bikes[bikeId],
-        [field]: value
-      }
+      [bikeId]: { ...bikes[bikeId], [field]: value }
     };
     saveBikes(updated);
   };
@@ -132,22 +120,16 @@ const BRouterApp = () => {
     }
   };
 
-  // ===== INITIALISER CARTE =====
   useEffect(() => {
     if (!mapContainer.current || mapInstance) return;
 
     const map = L.map(mapContainer.current).setView([47.0, 2.0], 6);
 
-    // Couche OSM vélo (OpenAndroMaps avec overlay vélo)
-    L.tileLayer(
-      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 19
-      }
-    ).addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap',
+      maxZoom: 19
+    }).addTo(map);
 
-    // Surcouche pistes vélo (OpenCycleMap)
     L.tileLayer(
       'https://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey=0e137e1cf23424d768cfb6be4ce97560',
       {
@@ -157,7 +139,6 @@ const BRouterApp = () => {
       }
     ).addTo(map);
 
-    // Click pour ajouter waypoints
     map.on('click', (e) => {
       if (mapMode !== 'select') return;
       const { lat, lng } = e.latlng;
@@ -171,7 +152,6 @@ const BRouterApp = () => {
     };
   }, []);
 
-  // ===== GESTION WAYPOINTS =====
   const addWaypoint = (lat, lng) => {
     const newWaypoint = { lat, lng, id: Date.now() };
     setWaypoints([...waypoints, newWaypoint]);
@@ -182,20 +162,15 @@ const BRouterApp = () => {
   };
 
   const updateWaypoint = (id, lat, lng) => {
-    setWaypoints(waypoints.map(w =>
-      w.id === id ? { ...w, lat, lng } : w
-    ));
+    setWaypoints(waypoints.map(w => (w.id === id ? { ...w, lat, lng } : w)));
   };
 
-  // ===== AFFICHER MARKERS =====
   useEffect(() => {
     if (!mapInstance) return;
 
-    // Nettoyer anciens markers
     markersRef.current.forEach(m => mapInstance.removeLayer(m));
     markersRef.current = [];
 
-    // Ajouter nouveaux markers
     waypoints.forEach((wp, idx) => {
       const icon = L.divIcon({
         html: `<div style="
@@ -211,8 +186,7 @@ const BRouterApp = () => {
           border: 2px solid white;
           box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         ">${idx + 1}</div>`,
-        iconSize: [32, 32],
-        className: 'brouter-marker'
+        iconSize: [32, 32]
       });
 
       const marker = L.marker([wp.lat, wp.lng], { icon, draggable: true })
@@ -225,14 +199,12 @@ const BRouterApp = () => {
       markersRef.current.push(marker);
     });
 
-    // Fit bounds si waypoints
     if (waypoints.length > 0) {
       const bounds = L.latLngBounds(waypoints.map(w => [w.lat, w.lng]));
       mapInstance.fitBounds(bounds, { padding: [50, 50] });
     }
   }, [mapInstance, waypoints]);
 
-  // ===== ROUTAGE BROUTER =====
   const calculateRoute = async () => {
     if (waypoints.length < 2) {
       alert('Au minimum 2 waypoints requis');
@@ -243,10 +215,8 @@ const BRouterApp = () => {
     try {
       const bike = bikes[selectedBike];
       const coords = waypoints.map(w => `${w.lng},${w.lat}`).join('|');
-      
-      // API BRouter public
       const url = `https://brouter.de/brouter?lonlats=${coords}&profile=${bike.profile}&format=geojson`;
-      
+
       const response = await fetch(url);
       const data = await response.json();
 
@@ -258,37 +228,30 @@ const BRouterApp = () => {
 
       const feature = data.features[0];
       const coords_route = feature.geometry.coordinates;
-      
-      // Afficher polyline
+
       if (polylineRef.current) {
         mapInstance.removeLayer(polylineRef.current);
       }
-      
+
       const polyline = L.polyline(
         coords_route.map(c => [c[1], c[0]]),
         { color: '#06b6d4', weight: 3, opacity: 0.8 }
       ).addTo(mapInstance);
-      
+
       polylineRef.current = polyline;
 
-      // Calculer métriques
       const distance = calculateDistance(coords_route);
       const duration = calculateDuration(distance, bike.maxSpeed);
 
-      setRoute({
-        coordinates: coords_route,
-        geojson: feature
-      });
-
+      setRoute({ coordinates: coords_route, geojson: feature });
       setRouteMetrics({
         distance: distance.toFixed(1),
-        duration: duration.toFixed(0),
-        elevation: feature.properties?.elevation ? feature.properties.elevation : 'N/A'
+        duration: duration.toFixed(0)
       });
 
       setMapMode('view');
     } catch (error) {
-      alert('Erreur calcul route: ' + error.message);
+      alert('Erreur: ' + error.message);
     } finally {
       setIsRouting(false);
     }
@@ -305,7 +268,7 @@ const BRouterApp = () => {
   };
 
   const haversine = (lat1, lng1, lat2, lng2) => {
-    const R = 6371; // km
+    const R = 6371;
     const dLat = ((lat2 - lat1) * Math.PI) / 180;
     const dLng = ((lng2 - lng1) * Math.PI) / 180;
     const a =
@@ -318,10 +281,9 @@ const BRouterApp = () => {
   };
 
   const calculateDuration = (distance, speed) => {
-    return (distance / speed) * 60; // minutes
+    return (distance / speed) * 60;
   };
 
-  // ===== EXPORT GPX =====
   const exportGPX = () => {
     if (!route) {
       alert('Aucune route à exporter');
@@ -363,7 +325,6 @@ ${trkpts}
 </gpx>`;
   };
 
-  // ===== RESET =====
   const resetRoute = () => {
     setRoute(null);
     setRouteMetrics(null);
@@ -378,12 +339,10 @@ ${trkpts}
     setMapMode('select');
   };
 
-  // ===== RENDU =====
   const currentBike = bikes[selectedBike] || {};
 
   return (
     <div style={styles.container}>
-      {/* HEADER */}
       <div style={styles.header}>
         <h1 style={styles.title}>🚴 BRouter Mobile</h1>
         <div style={styles.tabs}>
@@ -404,14 +363,11 @@ ${trkpts}
         </div>
       </div>
 
-      {/* CONTENU */}
       <div style={styles.content}>
-        {/* === CONFIG VÉLO === */}
         {activeTab === 'config' && (
           <div style={styles.panel}>
             <h2 style={styles.panelTitle}>Configuration Vélo</h2>
 
-            {/* Sélection vélo */}
             <div style={styles.section}>
               <label style={styles.label}>Vélo</label>
               <select
@@ -428,7 +384,6 @@ ${trkpts}
               </select>
             </div>
 
-            {/* Détails vélo actif */}
             <div style={styles.bikeCard}>
               <h3 style={styles.bikeCardTitle}>{currentBike.name}</h3>
               <p style={styles.bikeCardDesc}>{currentBike.description}</p>
@@ -493,7 +448,6 @@ ${trkpts}
               )}
             </div>
 
-            {/* Ajouter vélo personnalisé */}
             <div style={styles.section}>
               <h3 style={styles.sectionTitle}>Ajouter un vélo</h3>
               <div style={styles.addBikeForm}>
@@ -504,10 +458,7 @@ ${trkpts}
                   onChange={(e) => setNewBikeName(e.target.value)}
                   style={styles.input}
                 />
-                <button
-                  onClick={addCustomBike}
-                  style={styles.btnPrimary}
-                >
+                <button onClick={addCustomBike} style={styles.btnPrimary}>
                   + Ajouter
                 </button>
               </div>
@@ -515,37 +466,30 @@ ${trkpts}
           </div>
         )}
 
-        {/* === CARTE === */}
         {activeTab === 'map' && (
           <div style={styles.mapPanel}>
             <div style={styles.mapHeader}>
               <h2 style={styles.panelTitle}>Sélection des waypoints</h2>
-              <div style={styles.mapModeInfo}>
-                <span style={{
-                  ...styles.badge,
-                  background: mapMode === 'select' ? '#22c55e' : '#3b82f6'
-                }}>
-                  {mapMode === 'select' ? '+ Click pour ajouter' : 'Route calculée'}
-                </span>
-              </div>
+              <span style={{
+                ...styles.badge,
+                background: mapMode === 'select' ? '#22c55e' : '#3b82f6'
+              }}>
+                {mapMode === 'select' ? '+ Click' : 'Calculée'}
+              </span>
             </div>
-            
+
             <div ref={mapContainer} style={styles.map} />
 
-            {/* Waypoints list */}
             {waypoints.length > 0 && (
               <div style={styles.waypointsList}>
                 <h3 style={styles.sectionTitle}>Waypoints ({waypoints.length})</h3>
                 {waypoints.map((w, idx) => (
                   <div key={w.id} style={styles.waypointItem}>
-                    <span style={{ fontWeight: 'bold', color: '#666' }}>#{idx + 1}</span>
+                    <span style={{ fontWeight: 'bold' }}>#{idx + 1}</span>
                     <span style={{ fontSize: '0.85rem', color: '#999' }}>
                       {w.lat.toFixed(4)}, {w.lng.toFixed(4)}
                     </span>
-                    <button
-                      onClick={() => removeWaypoint(w.id)}
-                      style={styles.btnSmall}
-                    >
+                    <button onClick={() => removeWaypoint(w.id)} style={styles.btnSmall}>
                       ✕
                     </button>
                   </div>
@@ -553,24 +497,16 @@ ${trkpts}
               </div>
             )}
 
-            {/* Actions */}
             {waypoints.length >= 2 && (
               <div style={styles.actions}>
                 <button
                   onClick={calculateRoute}
                   disabled={isRouting}
-                  style={{
-                    ...styles.btnPrimary,
-                    opacity: isRouting ? 0.6 : 1,
-                    cursor: isRouting ? 'wait' : 'pointer'
-                  }}
+                  style={{...styles.btnPrimary, opacity: isRouting ? 0.6 : 1}}
                 >
-                  {isRouting ? '⏳ Calcul...' : '🗺️ Calculer route'}
+                  {isRouting ? '⏳ Calcul...' : '🗺️ Calculer'}
                 </button>
-                <button
-                  onClick={() => setWaypoints([])}
-                  style={styles.btnSecondary}
-                >
+                <button onClick={() => setWaypoints([])} style={styles.btnSecondary}>
                   Réinitialiser
                 </button>
               </div>
@@ -578,7 +514,6 @@ ${trkpts}
           </div>
         )}
 
-        {/* === ROUTE === */}
         {activeTab === 'route' && (
           <div style={styles.panel}>
             <h2 style={styles.panelTitle}>Résumé Route</h2>
@@ -608,16 +543,10 @@ ${trkpts}
                 </div>
 
                 <div style={styles.actions}>
-                  <button
-                    onClick={exportGPX}
-                    style={styles.btnSuccess}
-                  >
+                  <button onClick={exportGPX} style={styles.btnSuccess}>
                     📥 Exporter GPX
                   </button>
-                  <button
-                    onClick={resetRoute}
-                    style={styles.btnSecondary}
-                  >
+                  <button onClick={resetRoute} style={styles.btnSecondary}>
                     Nouvelle route
                   </button>
                 </div>
@@ -625,10 +554,7 @@ ${trkpts}
             ) : (
               <div style={styles.emptyState}>
                 <p>Aucune route calculée</p>
-                <button
-                  onClick={() => setActiveTab('map')}
-                  style={styles.btnPrimary}
-                >
+                <button onClick={() => setActiveTab('map')} style={styles.btnPrimary}>
                   Aller à la carte
                 </button>
               </div>
@@ -640,13 +566,12 @@ ${trkpts}
   );
 };
 
-// ===== STYLES =====
 const styles = {
   container: {
     display: 'flex',
     flexDirection: 'column',
     height: '100vh',
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    fontFamily: "'-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     background: '#f8fafc',
     color: '#1e293b'
   },
@@ -654,8 +579,7 @@ const styles = {
     background: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%)',
     color: 'white',
     padding: '16px',
-    borderBottom: '2px solid #0284c7',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+    borderBottom: '2px solid #0284c7'
   },
   title: {
     margin: '0 0 12px 0',
@@ -674,8 +598,7 @@ const styles = {
     borderRadius: '6px',
     cursor: 'pointer',
     fontSize: '14px',
-    fontWeight: '500',
-    transition: 'all 0.2s'
+    fontWeight: '500'
   },
   tabBtnActive: {
     background: 'rgba(255,255,255,0.9)',
@@ -693,8 +616,7 @@ const styles = {
   mapPanel: {
     display: 'flex',
     flexDirection: 'column',
-    height: '100%',
-    padding: '0'
+    height: '100%'
   },
   mapHeader: {
     padding: '16px',
@@ -705,14 +627,13 @@ const styles = {
     alignItems: 'center'
   },
   panelTitle: {
-    margin: '0 0 16px 0',
+    margin: '0',
     fontSize: '20px',
     fontWeight: 'bold'
   },
   map: {
     flex: 1,
-    width: '100%',
-    minHeight: '400px'
+    width: '100%'
   },
   section: {
     marginBottom: '24px'
@@ -727,8 +648,7 @@ const styles = {
     display: 'block',
     marginBottom: '8px',
     fontSize: '14px',
-    fontWeight: '500',
-    color: '#475569'
+    fontWeight: '500'
   },
   input: {
     width: '100%',
@@ -736,8 +656,7 @@ const styles = {
     border: '1px solid #cbd5e1',
     borderRadius: '6px',
     fontSize: '14px',
-    boxSizing: 'border-box',
-    transition: 'border 0.2s'
+    boxSizing: 'border-box'
   },
   select: {
     width: '100%',
@@ -745,7 +664,6 @@ const styles = {
     border: '1px solid #cbd5e1',
     borderRadius: '6px',
     fontSize: '14px',
-    boxSizing: 'border-box',
     background: 'white'
   },
   bikeCard: {
@@ -811,8 +729,7 @@ const styles = {
     border: 'none',
     borderRadius: '6px',
     cursor: 'pointer',
-    fontWeight: '600',
-    transition: 'background 0.2s'
+    fontWeight: '600'
   },
   btnSecondary: {
     padding: '12px 16px',
@@ -821,8 +738,7 @@ const styles = {
     border: 'none',
     borderRadius: '6px',
     cursor: 'pointer',
-    fontWeight: '600',
-    transition: 'background 0.2s'
+    fontWeight: '600'
   },
   btnSuccess: {
     padding: '12px 16px',
@@ -831,8 +747,7 @@ const styles = {
     border: 'none',
     borderRadius: '6px',
     cursor: 'pointer',
-    fontWeight: '600',
-    transition: 'background 0.2s'
+    fontWeight: '600'
   },
   btnDanger: {
     padding: '10px 16px',
@@ -889,10 +804,6 @@ const styles = {
     borderRadius: '8px',
     marginBottom: '20px',
     fontSize: '14px'
-  },
-  mapModeInfo: {
-    display: 'flex',
-    gap: '8px'
   },
   emptyState: {
     textAlign: 'center',
