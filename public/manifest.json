@@ -1,39 +1,21 @@
 {
-  "name": "BRouter Mobile - Planificateur de Routes Vélo",
+  "name": "BRouter Mobile",
   "short_name": "BRouter",
-  "description": "Planificateur de routes vélo avec BRouter - Routage intelligent pour tous types de vélos",
+  "description": "Planificateur de routes vélo",
   "start_url": "/",
-  "scope": "/",
   "display": "standalone",
-  "orientation": "portrait-primary",
   "theme_color": "#0ea5e9",
   "background_color": "#ffffff",
-  "prefer_related_applications": false,
-  "categories": ["navigation", "sports"],
   "icons": [
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
+      "type": "image/png"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon-192-maskable.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
-      "src": "/icon-512-maskable.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
+      "type": "image/png"
     }
   ]
 }
