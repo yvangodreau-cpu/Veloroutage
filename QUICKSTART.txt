@@ -1,0 +1,94 @@
+🚀 **DÉMARRAGE RAPIDE - 5 MINUTES**
+
+## 1️⃣ Installation locale
+
+```bash
+# Crée le projet
+npm create vite@latest brouter-pwa -- --template react
+cd brouter-pwa
+
+# Installe les dépendances
+npm install leaflet vite-plugin-pwa
+
+# Copie les fichiers fournis:
+# - vite.config.js
+# - index.html
+# - src/main.jsx
+# - src/index.css
+# - src/BRouterApp.jsx
+# - public/manifest.json
+```
+
+## 2️⃣ Lance en dev
+
+```bash
+npm run dev
+```
+
+Ouvre: **http://localhost:5173**
+
+## 3️⃣ Teste sur smartphone (même WiFi)
+
+### Android
+- Chrome → http://[IP-DU-PC]:5173
+- Menu → **"Installer l'app"**
+
+### iOS
+- Safari → http://[IP-DU-PC]:5173
+- Partage → **"Sur l'écran d'accueil"**
+
+---
+
+## 🚀 Déploiement en 2 min (VERCEL)
+
+### Étape 1: GitHub
+```bash
+git init
+git add .
+git commit -m "Initial"
+git branch -M main
+git remote add origin https://github.com/TON_USERNAME/brouter-pwa
+git push -u origin main
+```
+
+### Étape 2: Vercel
+1. Va sur https://vercel.com
+2. **Import Project** → Sélectionne le repo GitHub
+3. **Deploy** → C'est tout !
+
+**Ton app sera à:** https://brouter-pwa-xxxxx.vercel.app
+
+### Étape 3: Smartphone
+- Ouvre le lien Vercel
+- Clique **"Installer l'app"**
+- ✅ Installée !
+
+---
+
+## 📁 Structure minimale
+
+```
+brouter-pwa/
+├── src/
+│   ├── BRouterApp.jsx
+│   ├── main.jsx
+│   └── index.css
+├── public/
+│   └── manifest.json
+├── index.html
+├── vite.config.js
+├── package.json
+└── .gitignore
+```
+
+---
+
+## ⚠️ Important
+
+- ✅ **HTTPS obligatoire** en production (Vercel = auto HTTPS)
+- ✅ Attends 10s que le Service Worker charge
+- ✅ Actualise en Ctrl+Shift+R si besoin
+
+---
+
+C'est tout ! Des questions ? 🚴‍♂️
