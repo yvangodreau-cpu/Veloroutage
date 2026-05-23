@@ -3,95 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    
-    <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#0ea5e9" />
-    <meta name="description" content="Planificateur de routes vélo avec BRouter - Routage intelligent pour tous types de vélos" />
+    <meta name="description" content="Planificateur de routes vélo avec BRouter" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="BRouter" />
-    
-    <!-- Icons & Manifest -->
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.json" />
-    
-    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
-    <title>BRouter Mobile - Planificateur de routes vélo</title>
-    
+    <title>BRouter Mobile</title>
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-      
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        background: #f8fafc;
-        color: #1e293b;
-        overflow: hidden;
-      }
-      
-      #root {
-        width: 100%;
-        height: 100vh;
-      }
-      
-      @supports (padding: max(0px)) {
-        body {
-          padding-left: max(0px, env(safe-area-inset-left));
-          padding-right: max(0px, env(safe-area-inset-right));
-          padding-top: max(0px, env(safe-area-inset-top));
-          padding-bottom: max(0px, env(safe-area-inset-bottom));
-        }
-      }
-      
-      .brouter-loading {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-        background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
-        color: white;
-        font-size: 18px;
-        font-weight: 600;
-      }
-      
-      .brouter-loading::after {
-        content: '';
-        width: 20px;
-        height: 20px;
-        margin-left: 10px;
-        border: 3px solid rgba(255, 255, 255, 0.3);
-        border-top-color: white;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
-      
-      @keyframes spin {
-        to { transform: rotate(360deg); }
-      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8fafc; overflow: hidden; }
+      #root { width: 100%; height: 100vh; }
+      .loading { display: flex; align-items: center; justify-content: center; height: 100vh; background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%); color: white; font-size: 18px; font-weight: 600; }
+      .loading::after { content: ''; width: 20px; height: 20px; margin-left: 10px; border: 3px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 1s linear infinite; }
+      @keyframes spin { to { transform: rotate(360deg); } }
     </style>
   </head>
   <body>
     <div id="root">
-      <div class="brouter-loading">Chargement BRouter...</div>
+      <div class="loading">Chargement...</div>
     </div>
-    
-    <script type="module" src="./src/main.jsx"></script>
-    
-    <script>
-      // Service Worker registration
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').catch(err => {
-            console.log('SW error:', err);
-          });
-        });
-      }
-    </script>
+    <script type="module" src="src/main.jsx"></script>
   </body>
 </html>
